@@ -22,8 +22,8 @@
 #ifndef FOO_H
 #define FOO_H
 
+#define ABNORMAL_TERMINATION 0
 #define NORMAL_TERMINATION 1
-#define ABNORMAL_TERMINATION 0   
 
 /* This struct is passed to function runcommand. */
 

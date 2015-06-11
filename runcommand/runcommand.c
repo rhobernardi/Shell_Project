@@ -46,10 +46,10 @@ int runcommand (command_t *command)
       aux = wait (&status);
       fail (aux<0, -1);
       command->termination = WIFEXITED (status);
-      if (command->termination == ABNORMAL_TERMINATION) 
-        command->exit_status = EXIT_FAILURE;
-      else
-        command->exit_status = WEXITSTATUS (status);
+      
+      if (command->termination == ABNORMAL_TERMINATION) command->exit_status = EXIT_FAILURE;
+        
+      else command->exit_status = WEXITSTATUS (status);
 
     }
   else				/* Child (subprocess). */

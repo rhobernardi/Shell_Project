@@ -1,10 +1,10 @@
 ---------------------------------------------------
- Instrucoes
+ Instruções
 ---------------------------------------------------
-- Estando no diretorio do nutshell, execute:
+- Estando no diretorio do mastershell, execute:
 	- Para compilar: make
 	- Para executar: make run
-- Importante: executar export LD_LIBRARY_PATH=. se deseja que a lib seja buscada no diretorio atual (do nutshell)
+- Importante: executar export LD_LIBRARY_PATH=. se deseja que a lib seja buscada no diretorio atual (do mastershell)
 
 ---------------------------------------------------
  Funcoes implementadas

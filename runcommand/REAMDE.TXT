@@ -1,7 +1,0 @@
-
-A system-like function.
-
-To build:
-
-make
-

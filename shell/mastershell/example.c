@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <foosh.h>		/* List API is here. */
+#include <mastershell.h>		/* List API is here. */
 
 /* Function used to free a node's value. */
 

@@ -202,6 +202,7 @@ test: all
 # Run Master$hell
 
 run: all
+	export LD_LIBRARY_PATH=.
 	./mastershell
 
 # Extras

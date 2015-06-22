@@ -56,17 +56,18 @@ void help()
 /* Built in jobs command */
 void jobs(){
 	int i;
-
-	printf("PID\tstatus\tground\n");
-	printf("--------------------------\n");
+	printf("\nPROCESS LIST\n\n");
+	printf(" PID\tSTATUS\t GROUND\n");
+	printf("==========================\n");
 
 	for (i = 0; i < exeJobs->count; i++){
-		printf("%d\t%s\t%s\n", exeJobs->jobs[i].pid, !exeJobs->jobs[i].status ? "RUNNING" : "WAITING", !exeJobs->jobs[i].ground ? "FOREGROUND" : "BACKGROUND");
+		printf("[%d]\t%s\t%s\n", exeJobs->jobs[i].pid, !exeJobs->jobs[i].status ? "RUNNING" : "WAITING", !exeJobs->jobs[i].ground ? "FOREGROUND" : "BACKGROUND");
 	}
+	printf("\n");
 }
 
 /* Creates a job */
-job createJob(int pid, int ground)
+job nJob(int pid, int ground)
 {
 	job nJob;
 
@@ -78,7 +79,7 @@ job createJob(int pid, int ground)
 }
 
 /* Adds jobs to the job list and executes them */
-void addJobs(pipeline_t* pipeline){
+void addJobsBack(pipeline_t* pipeline){
 	int i, aux;
 	int pid, status;
 
@@ -92,6 +93,7 @@ void addJobs(pipeline_t* pipeline){
 			close(0);
 			fatal(open(pipeline->file_in, O_RDONLY, S_IRUSR | S_IWUSR) < 0, NULL);
 		}
+
 		/* Redirects the output from stdout for the last process */
 		if (REDIRECT_STDOUT(pipeline) && i == pipeline->ncommands-1){
 			close(1);
@@ -103,7 +105,7 @@ void addJobs(pipeline_t* pipeline){
 
 		if (pid > 0) { /* Parent */
 			/* Adds the job to the list */
-			exeJobs->jobs[exeJobs->count + i] = createJob(pid, pipeline->ground);
+			exeJobs->jobs[exeJobs->count + i] = nJob(pid, pipeline->ground);
 			exeJobs->count += 1;
 
 			/* Waits, if the process is foreground */
@@ -118,31 +120,30 @@ void addJobs(pipeline_t* pipeline){
 	}
 }
 
+void addJobsFore(pipeline_t* pipeline, int pid){
+	int i;
+
+	/* allocates space for the new jobs */
+	exeJobs->jobs = (job*)realloc(exeJobs->jobs, (exeJobs->count + pipeline->ncommands)*sizeof(job));
+	
+	/* Adds all jobs to the list and executes them */
+	for (i = 0; i < pipeline->ncommands; i++){
+		exeJobs->jobs[exeJobs->count + i] = nJob(pid, pipeline->ground);
+		exeJobs->count += 1;
+	}
+}
+
 /*
 	Built in function: print a ASCII-style scarab
 */
-void escaravelho()
+void printlogo()
 {
-	printf("\
-	            _\n\
-	        _,=(_)=,_\n\
-	     ,;`         `;,\n\
-	    \\\\    (\\^/)    //\n\
-	     \\\\   <( )>   //\n\
-	      <`-'`\"\"\"`'-`>\n\
-	     _/           \\_\n\
-	   _(_\\           /_)_\n\
-	  /|` |`----.----`| `|\\\n\
-	  |/  |     |     |  \\|\n\
-	 />   |     |     |   <\\\n\
-	     _;     |     ;_\n\
-	   <`_\\     |     /_`>\n\
-	   |\\  `._  |  _.'  /|\n\
-	   \\|     `\"\"\"`    |/\n\
-	    |\\            /|\n\
-	     \\\\          //\n\
-	     /_>        <_\\\n\
-");
+	printf("\n\n\t=== Master$hell ===\n\n");
+
+	printf("Grupo:\n");
+	printf("- Guilherme Augusto Bileki / 4287189\n");
+	printf("- Luis Gustavo B. Ferrassini / 7987414\n");
+	printf("- Rodrigo das Neves Bernardi / 8066395\n\n\n");
 }
 
 /*
@@ -156,8 +157,8 @@ int exec_builtin(char *cmd, char **cmdargv)
 		return 1;
 	}
 
-	if (strcmp(cmd, "escaravelho") == 0) {
-		escaravelho();
+	if (strcmp(cmd, "printlogo") == 0) {
+		printlogo();
 		return 1;
 	}
 
@@ -254,6 +255,10 @@ int main(int argc, char **argv)
 
 	current_directory = (char*) malloc(1024*sizeof(char));
 
+	exeJobs = (s_exeJobs*)malloc(sizeof(s_exeJobs));
+  	exeJobs->jobs = NULL;
+  	exeJobs->count = 0;
+
 	/* Welcome message */
 	system("clear");
 	printf("Welcome to Master$hell!\n");
@@ -275,6 +280,12 @@ int main(int argc, char **argv)
 			/* Try to execute built in command */
 			if (exec_builtin(pipeline->command[0][0], pipeline->command[0]))
 				continue;
+
+			/* Running group of process in background */
+			if(RUN_BACKGROUND(pipeline))
+			{
+				addJobsBack(pipeline);
+			}
 
 			/* Running group of process in foreground */
 			if (RUN_FOREGROUND(pipeline)) 
@@ -308,6 +319,7 @@ int main(int argc, char **argv)
 					if (pid > 0) 
 					{
 						/* Just wait for child to end */
+						addJobsFore(pipeline, pid);
 						wait(&status);
 
 						/* If child */
